@@ -624,6 +624,7 @@ mainEllipsoid = Ellipsoid((0,windowWidth/12,windowHeight*5/6-20), 40,80,50, True
 xGrab, yGrab, zGrab = False, False, False
 
 shapeList = []
+pointsList = []
 selectedShape = None
 
 running = True  
@@ -638,6 +639,12 @@ while running:
         
         if event.type == pygame.MOUSEBUTTONUP:
             xGrab, yGrab, zGrab = False, False, False
+
+            pointsList = [shape.create_liste_cubeinfini_object() for shape in shapeList]
+            if len(pointsList) == 2:
+                vectors = VectorCreation(*pointsList)
+
+
 
         if selectedShape != None:
             c = selectedShape.arrowC
@@ -690,6 +697,8 @@ while running:
 
                                 found = True
                             else:
+                                if selectedShape != None:
+                                        selectedShape.color = colors["lblue"]
                                 selectedShape = None
 
         elif (pygame.mouse.get_pos()[0] >= mainPrism.corners[0][0] and pygame.mouse.get_pos()[0] <= mainPrism.corners[1][0] and
@@ -805,6 +814,15 @@ while running:
         pygame.draw.circle(window, colors["green"], (c[0]+8, c[1]+1), 2)
         pygame.draw.polygon(window, colors["green"], ((cY[0]+12, cY[1]), (cY[0], cY[1]-6), (cY[0], cY[1]+6)))
 
+
+    if len(pointsList) == 2:
+        vectors = VectorCreation(*pointsList).retour_listes_position_vecter()
+        for sh in vectors:
+            for (pos, vec) in sh:
+                p0 = to2d(pos[0],pos[1],pos[2], False)
+                p1 = to2d(pos[0]+vec[0]*100,pos[1]+vec[1]*100,pos[2]+vec[2]*100, False)
+
+                pygame.draw.line(window, colors["red"], p0, p1)
 
     pygame.display.update() 
 
