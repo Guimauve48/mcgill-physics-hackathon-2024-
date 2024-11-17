@@ -7,21 +7,20 @@ PI = math.pi
 
 class CubeInfini:
     #Create a point with a mass and position
-    def __init__(self, position_x, position_y, position_z, volume, arrete):
-        self.volume = volume
+    def __init__(self, position_x, position_y, position_z, volume, masse):
+        self.volume_cube = volume
         self.position_x = position_x
         self.position_y = position_y
         self.position_z = position_z
-        self.arrete = arrete
-    def __str__(self):
-        return f'{self.position_x}, {self.position_y}, {self.position_z}'
-
+        self.masse = masse
     #To take back position of the point
     def position(self):
         return [self.position_x, self.position_y, self.position_z]
+    def mass(self):
+        return self.masse
+    def volume(self):
+        return self.volume_cube
     
-    def arret_cube(self):
-        return self.volume ** (1/3)
     
 
 class Prisme:
@@ -150,10 +149,26 @@ class Prisme:
         second_half_solid = self.create_total_points_for_prisme()[:]
         return half_solid + second_half_solid
 
+
+    def vrai_mass(self):
+        num_points = len(self.complete_list_point_in_prisme())
+        mass = self.masse
+        vrai_mass_cube = mass / num_points
+        return vrai_mass_cube
+
+
     def create_liste_cubeinfini_object(self):
         points = self.complete_list_point_in_prisme()[:]
-        list_obj_cube = [CubeInfini(points[0], points[1], points[2], self.volume_1_cube(), self.arrete_cube()) for p in points]
-        return list_obj_cube
+        list_obj = []
+        for positions in points:
+            a = CubeInfini(positions[0], positions[1], positions[2], self.volume_1_cube(), self.vrai_mass())
+            list_obj.append(a)
+        return list_obj
+
+
+
+
+
 
 
 class Cone:
@@ -176,13 +191,13 @@ class Cone:
         return self.volume_tot() / self.tot_num_cube()
     
     def arrete_cube(self):
-        return round(self.volume_1_cube() ** (1/3), 5)
+        return (self.volume_1_cube() ** (1/3))
     
     def find_all_position_of_z(self):
-        starting_z = self.arrete_cube() / 2
+        starting_z = (self.arrete_cube() / 2) + self.z_center
         number_cube_en_z = 0
         list_z = []
-        while starting_z <= self.hauteur:
+        while starting_z <= (self.hauteur) + self.z_center:
             list_z.append(starting_z)
             starting_z += self.arrete_cube()
             number_cube_en_z += 1
@@ -211,10 +226,10 @@ class Cone:
             if pente == 0:
                 rayon = rayon_bas
             elif pente < 0:
-                rayon = (z - self.hauteur)/pente
+                rayon = (z - (self.hauteur + self.z_center))/pente
                 rayon += rayon_haut
             elif pente > 0:
-                rayon = z/pente
+                rayon = (z - self.z_center)/pente
                 rayon += rayon_bas
             liste_z_with_r.append([z, rayon])
         return liste_z_with_r
@@ -246,8 +261,8 @@ class Cone:
         z = list_info[2]
         rayon = list_info[3]
         list_cadrant_1 = []
-        while y**2 <= (rayon ** 2) - (x ** 2):
-            while x**2 <= (rayon ** 2) - (y ** 2):
+        while (y - self.y_center)**2 <= (rayon ** 2) - ((x - self.x_center) ** 2):
+            while (x - self.x_center)**2 <= (rayon ** 2) - ((y - self.y_center) ** 2):
                 list_adding = [x,y] + [z]
                 list_cadrant_1.append(list_adding)
                 x += (self.arrete_cube())
@@ -290,6 +305,28 @@ class Cone:
             list_cercle_at_given_z = self.tot_cericle_at_z(list_a_etudier)
             list_complete_cone = list_complete_cone + list_cercle_at_given_z
         return list_complete_cone
+    
+    def vrai_mass(self):
+        num_points = len(self.trouver_tous_les_points_cone())
+        mass = self.masse
+        vrai_mass_cube = mass / num_points
+        return vrai_mass_cube
+    
+    def create_liste_cubeinfini_object(self):
+        points = self.trouver_tous_les_points_cone()[:]
+        list_obj = []
+        for positions in points:
+            a = CubeInfini(positions[0], positions[1], positions[2], self.volume_1_cube(), self.vrai_mass())
+            list_obj.append(a)
+        return list_obj
+
+
+
+
+
+
+
+
 
 class Ellipsoide:
     def __init__(self, x, y, z, rX, rY, rZ, masse):
@@ -311,7 +348,7 @@ class Ellipsoide:
         return self.volume_tot() / self.tot_num_cube()
     
     def arrete_cube(self):
-        return round(self.volume_1_cube() ** (1/3), 5)
+        return self.volume_1_cube() ** (1/3)
     
     def point_milieu_cube(self):
         x_intitial = self.x_init + (self.arrete_cube() / 2)
@@ -320,11 +357,11 @@ class Ellipsoide:
         return [x_intitial, y_intitial, z_intitial]
 
     def trouver_tous_points_z(self):
-        point_ini = self.point_milieu_cube()
+        point_ini = self.point_milieu_cube() 
         x_test = point_ini[0]
         y_test = point_ini[1]
         z_test = point_ini[2]
-        max = self.rayon_Z
+        max = self.rayon_Z + self.z_init
         list_point_milieu = []
         while z_test <= max:
             list_point_milieu.append([x_test, y_test, z_test])
@@ -379,6 +416,97 @@ class Ellipsoide:
             points_cercle = self.trouver_point_tous_cercle_pour_given_z(element)
             complete_liste = complete_liste + points_cercle
         return complete_liste
+    
+    def vrai_mass(self):
+        num_points = len(self.tous_les_points_ellipsoide())
+        mass = self.masse
+        vrai_mass_cube = mass / num_points
+        return vrai_mass_cube
+    
+    def create_liste_cubeinfini_object(self):
+        points = self.tous_les_points_ellipsoide()[:]
+        list_obj = []
+        for positions in points:
+            a = CubeInfini(positions[0], positions[1], positions[2], self.volume_1_cube(), self.vrai_mass())
+            list_obj.append(a)
+        return list_obj
+
+
+CONSTANT = 0.01
+GRAVITE = 9.81
+
+class VectorCreation:
+    def __init__(self, list_1_object, list_2_object):
+        self.list_1 = list_1_object
+        self.list_2 = list_2_object
+    
+    def distance_2_object(self, object_1_depart, object_2):
+        list_position_1_depart = object_1_depart.position()
+        list_position_2 = object_2.position()
+        x_1_d = list_position_1_depart[0]
+        x_2 = list_position_2[0]
+        y_1_d = list_position_1_depart[1]
+        y_2 = list_position_2[1]
+        z_1_d = list_position_1_depart[2]
+        z_2 = list_position_2[2]
+        distance = (((x_2 - x_1_d) ** 2) + ((y_2 - y_1_d) ** 2) + ((z_2 - z_1_d) ** 2)) ** (1/2)
+        return distance
+
+    def trouver_vecteur_unitaire_entre_2_objects(self, object_1_depart, object_2):
+        list_position_1_depart = object_1_depart.position()
+        list_position_2 = object_2.position()
+        x_1_d = list_position_1_depart[0]
+        x_2 = list_position_2[0]
+        y_1_d = list_position_1_depart[1]
+        y_2 = list_position_2[1]
+        z_1_d = list_position_1_depart[2]
+        z_2 = list_position_2[2]
+        distance = (((x_2 - x_1_d) ** 2) + ((y_2 - y_1_d) ** 2) + ((z_2 - z_1_d) ** 2)) ** (1/2)
+        vecteur_unitaire = [((x_2 - x_1_d)/distance),((y_2 - y_1_d)/distance),((z_2 - z_1_d)/distance)]
+        return vecteur_unitaire
+    
+    def trouver_force_2_masse(self, object_1, object_2):
+        masse_1 = object_1.mass()
+        masse_2 = object_2.mass()
+        distance = self.distance_2_object(object_1, object_2)
+        force = GRAVITE * masse_1 * masse_2 / (distance ** 2)
+        return force
+
+    def tout_vecteur_a_1_point(self, object_1, list_other_all_object):
+        tot_vecteur = [0,0,0]
+        for object_from_tot_object in list_other_all_object:
+            vecteur_unitaire_de_object_1 = self.trouver_vecteur_unitaire_entre_2_objects(object_1, object_from_tot_object)[:]
+            magnetude_force = self.trouver_force_2_masse(object_1, object_from_tot_object)
+            vecteur_1_froce = []
+            for element in vecteur_unitaire_de_object_1:
+                composante_vecteur_de_force_mini = element * magnetude_force
+                vecteur_1_froce.append(composante_vecteur_de_force_mini)
+            tot_vecteur[0] += vecteur_1_froce[0]
+            tot_vecteur[1] += vecteur_1_froce[1]
+            tot_vecteur[2] += vecteur_1_froce[2]
+        return tot_vecteur
+    
+    def trouver_vecteur_force_tout_point_1_object_venant_autre(self, list_object_a_etudier, list_object_2):
+        liste_out = []
+        for object_a_etudier in list_object_a_etudier:
+            vecteur_force_appliquer_au_point = self.tout_vecteur_a_1_point(object_a_etudier, list_object_2)
+            position_obj = object_a_etudier.position()
+            liste_a_lire_output = [position_obj, vecteur_force_appliquer_au_point]
+            liste_out.append(liste_a_lire_output)
+        return liste_out
+    
+    def retour_listes_position_vecter(self):
+        list_obj_1 = self.list_1
+        list_obj_2 = self.list_2
+        liste_complete_obj_1 = self.trouver_vecteur_force_tout_point_1_object_venant_autre(list_obj_1, list_obj_2)
+        liste_complete_obj_2 = self.trouver_vecteur_force_tout_point_1_object_venant_autre(list_obj_2, list_obj_1)
+        return (liste_complete_obj_1, liste_complete_obj_2)
+
+        
+
+
+
+    
 
 
 
@@ -388,37 +516,41 @@ class Ellipsoide:
 
 
 
-
-
-list_test = [1.694585, 1.694585, 1.694585]
-c =  Ellipsoide(1,1,1, 4, 4, 4,100)
-print(c.arrete_cube())
-print(c.trouver_tous_points_z())
+c =  Ellipsoide(10,10,10, 4, 4, 4,100)
+#print(c.arrete_cube())
+#print(c.trouver_tous_points_z())
 #print(c.trouver_tous_points_1er_cadrant(list_test))
 #print(c.trouver_points_deuxieme_demi(list_test))
 #print(c.trouver_point_tous_cercle_pour_given_z(list_test))
 #print(c.tous_les_points_ellipsoide())
+print(len(c.create_liste_cubeinfini_object()))
+list_1 = c.create_liste_cubeinfini_object()
+print(len(list_1))
     
 
         
-b = Cone(1,1,1,12,4,8,400)
+b = Cone(100,100,100,2,4,8,400)
 #print(b.tot_num_cube())
 #print(b.volume_1_cube())
 #print(b.arrete_cube())
 #print(b.find_all_position_of_z())
 #print(b.find_pente_entre_rayon())
 #print(b.find_rayon_chaque_z())
-#print(b.position_all_center_of_circle_r_and_num_cube_in_r())
+##print(b.position_all_center_of_circle_r_and_num_cube_in_r())
 #print(b.trouver_point_pour_cercle_premier_cadrant(list_test))
 #print()
 #print(b.find_second_cadrant_left())
 #print(b.tot_cericle_at_z(list_test))
+print(len(b.trouver_tous_les_points_cone()))
+#print((b.create_liste_cubeinfini_object()))
+
 #print(b.trouver_tous_les_points_cone())
+list_2 = b.create_liste_cubeinfini_object()
 
 
 
 
-a = Prisme(1,1,1,4,4,4,64)
+a = Prisme(0,0,1110,4,4,4,640)
 #print(a.tot_num_cube())
 #print(a.volume_1_cube())
 #print(a.arrete_cube())
@@ -429,22 +561,17 @@ a = Prisme(1,1,1,4,4,4,64)
 #print(a.trouver_point_cube_cadrant2())
 #print(a.create_down_candrants_from_combine_cadrant_1_et_2())
 #print(a.complete_list_point_in_prisme())
-#print(a.create_liste_cubeinfini_object())
-    
+print(len(a.create_liste_cubeinfini_object()))
+#print(len(a.create_liste_cubeinfini_object()))
 
 
 
-
-
-
-
+test = VectorCreation(list_1, list_2)
+print(test.retour_listes_position_vecter())
 
 
 
         
-        
-
-
 
 
 
