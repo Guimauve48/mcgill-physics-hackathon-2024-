@@ -452,10 +452,10 @@ class Ellipsoid:
         self.rZ = self.sZ
 
         self.center = to2d(self.x, self.y, self.z, self.main)
-        self.corners = ((self.center[0]-self.rY*P, self.center[1]+self.rZ*P),(self.center[0]+self.rY*P, self.center[1]-self.rZ*P))
+        self.corners = ((self.center[0]-self.rX*P, self.center[1]+35+self.rZ*P),(self.center[0]+self.rX*P, self.center[1]+35-self.rZ*P))
         self.arrowC = (self.corners[1][0]/2+self.corners[0][0]/2,self.corners[0][1]/2+self.corners[1][1]/2)
 
-        self.face = (self.center[0]-self.rY*P, self.center[1]-self.rZ*P, self.rY*2*P, self.rZ*2*P)
+        self.face = (self.center[0]-self.rX*P, self.center[1]-self.rZ*P+35, self.rX*2*P, self.rZ*2*P)
 
 
     def draw(self):
@@ -638,9 +638,9 @@ class VectorCreation:
 #! Object selection section
 section_bg = pygame.rect.Rect(0,0, windowWidth/6, windowHeight)
 
-mainPrism = Prism((0,windowWidth/12-20,windowHeight*1/6-25), (80,80,80), True, 100)
+mainPrism = Prism((0,windowWidth/12-5,windowHeight*1/6-25), (80,80,80), True, 100)
 mainCylinder = Cylinder((0,windowWidth/12,windowHeight/2-40), 50,50,80, True, 100)
-mainEllipsoid = Ellipsoid((0,windowWidth/12,windowHeight*5/6-20), 40,80,50, True, 100)
+mainEllipsoid = Ellipsoid((0,windowWidth/12,windowHeight*5/6-60), 75,10,45, True, 100)
 
 xGrab, yGrab, zGrab = False, False, False
 
@@ -710,13 +710,13 @@ while running:
 
             if event.key == 13:
                 if selectInput != None:
-                    if selectInput == 0:
+                    if selectInput == 0 and massInput != "":
                         selectedShape.masse = int(massInput)
-                    if selectInput == 1:
+                    if selectInput == 1 and sizeInput[0] != "":
                         selectedShape.sX = int(sizeInput[0])
-                    if selectInput == 2:
+                    if selectInput == 2 and sizeInput[1] != "":
                         selectedShape.sY = int(sizeInput[1])
-                    if selectInput == 3:
+                    if selectInput == 3 and sizeInput[2] != "":
                         selectedShape.sZ = int(sizeInput[2])
                     
                     selectInput = None
@@ -817,7 +817,7 @@ while running:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                shapeList[selectedBloc].append(Ellipsoid((0,0,0), 40, 80, 50, False, 100))
+                shapeList[selectedBloc].append(Ellipsoid((0,0,0), 80, 55, 60, False, 80))
         
         else:
             mainPrism.color = colors["lblue"]
