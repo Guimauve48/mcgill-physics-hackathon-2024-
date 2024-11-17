@@ -27,7 +27,7 @@ def to2d(x,y,z, main):
     return (center[0]+y-x*math.cos(theta), center[1]+z+x*math.sin(theta))
 
 def moveX(pos, x):
-    return (pos[0]+x/2*math.cos(theta), pos[1]-x/2*math.sin(theta))
+    return (pos[0]+x*math.cos(theta), pos[1]-x*math.sin(theta))
 
 def ellipse(rY, rZ, c, x):
     delta = ((1-((x-c[0])**2)/rY) * rZ)**0.5
@@ -62,9 +62,19 @@ class Prism:
         self.masse = masse
         self.color = colors["lblue"]
 
+        self.sX = size[0]
+        self.sY = size[1]
+        self.sZ = size[2]
+        self.nX = "Size X"
+        self.nY = "Size Y"
+        self.nZ = "Size Z"
+
         self.create()
 
     def create(self):
+        self.sizeX = self.sX
+        self.sizeY = self.sY
+        self.sizeZ = self.sZ
         p4 = to2d(self.x, self.y, self.z, self.main)
         p1 = moveX(p4,-self.sizeX)
         p0 = (p1[0], p1[1]+self.sizeZ)
@@ -232,11 +242,22 @@ class Cylinder:
         self.main = main
         self.masse = masse
         self.color = colors["lblue"]
+
+        self.sX = r1
+        self.sY = r2
+        self.sZ = height
+        self.nX = "Radius Top"
+        self.nY = "Radius Bottom"
+        self.nZ = "Height"
         
         self.create()
 
 
     def create(self):
+        self.r1 = self.sX
+        self.r2 = self.sY
+        self.height = self.sZ
+
         self.center = to2d(self.x, self.y, self.z, self.main)
         self.corners = ((self.center[0]-max(self.r1,self.r2)*P, self.center[1]+self.height*P+max(self.r1,self.r2)*P/2),(self.center[0]+max(self.r1,self.r2)*P, self.center[1]-max(self.r1,self.r2)*P/2))
         self.arrowC = (self.corners[1][0]/2+self.corners[0][0]/2,self.corners[0][1]/2+self.corners[1][1]/2)
@@ -415,10 +436,21 @@ class Ellipsoid:
         self.masse = masse
         self.color = colors["lblue"]
 
+        self.sX = rX
+        self.sY = rY
+        self.sZ = rZ
+        self.nX = "Radius X"
+        self.nY = "Radius Y"
+        self.nZ = "Radius Z"
+
         self.create()
 
 
     def create(self):
+        self.rX = self.sX
+        self.rY = self.sY
+        self.rZ = self.sZ
+
         self.center = to2d(self.x, self.y, self.z, self.main)
         self.corners = ((self.center[0]-self.rY*P, self.center[1]+self.rZ*P),(self.center[0]+self.rY*P, self.center[1]-self.rZ*P))
         self.arrowC = (self.corners[1][0]/2+self.corners[0][0]/2,self.corners[0][1]/2+self.corners[1][1]/2)
@@ -617,6 +649,12 @@ pointsList = [[],[]]
 selectedBloc = 0
 selectedShape = None
 
+massInput = ""
+sizeInput = ["", "", ""]
+inputFont = pygame.font.Font(None, 40)
+
+selectInput = None
+
 running = True  
 while running: 
     for event in pygame.event.get(): 
@@ -626,10 +664,62 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running = False
-            elif event.key == pygame.K_1:
-                selectedBloc = 0
-            elif event.key == pygame.K_2:
-                selectedBloc = 1
+
+            if selectInput != None:
+                if event.key == pygame.K_BACKSPACE:
+                    if selectInput == 0:
+                        massInput = massInput[:-1]
+                    elif selectInput == 1:
+                        sizeInput[0] = sizeInput[0][:-1]
+                    elif selectInput == 2:
+                        sizeInput[1] = sizeInput[1][:-1]
+                    elif selectInput == 3:
+                        sizeInput[2] = sizeInput[2][:-1]
+
+                elif event.key != 13:
+                    if selectInput == 0:
+                        massInput += pygame.key.name(event.key)
+                    elif selectInput == 1:
+                        sizeInput[0] += pygame.key.name(event.key)
+                    elif selectInput == 2:
+                        sizeInput[1] += pygame.key.name(event.key)
+                    elif selectInput == 3:
+                        sizeInput[2] += pygame.key.name(event.key)
+            else:
+                if event.key == pygame.K_1:
+                    selectedBloc = 0
+                elif event.key == pygame.K_2:
+                    selectedBloc = 1
+                
+                if event.key == pygame.K_m:
+                    selectInput = 0
+                elif event.key == pygame.K_x:
+                    selectInput = 1
+                elif event.key == pygame.K_y:
+                    selectInput = 2
+                elif event.key == pygame.K_z:
+                    selectInput = 3
+                
+                if event.key == pygame.K_BACKSPACE:
+                    if selectedShape != None:
+                        for (i1,shapeL) in enumerate(shapeList):
+                            for (i2,sh) in enumerate(shapeL):
+                                if selectedShape == sh:
+                                    shapeList[i1].pop(i2)
+                                    selectedShape == None
+
+            if event.key == 13:
+                if selectInput != None:
+                    if selectInput == 0:
+                        selectedShape.masse = int(massInput)
+                    if selectInput == 1:
+                        selectedShape.sX = int(sizeInput[0])
+                    if selectInput == 2:
+                        selectedShape.sY = int(sizeInput[1])
+                    if selectInput == 3:
+                        selectedShape.sZ = int(sizeInput[2])
+                    
+                    selectInput = None
         
         if event.type == pygame.MOUSEBUTTONUP:
             xGrab, yGrab, zGrab = False, False, False
@@ -687,7 +777,9 @@ while running:
                                     pygame.mouse.get_pos()[1] >= shape.corners[1][1] and pygame.mouse.get_pos()[1] <= shape.corners[0][1]):
                                     
                                     if selectedShape != None:
-                                            selectedShape.color = colors["lblue"]
+                                        selectedShape.color = colors["lblue"]
+                                        massInput = ""
+                                        sizeInput = ["", "", ""]
 
                                     if shape == selectedShape:
                                         selectedShape = None
@@ -698,7 +790,9 @@ while running:
                                     found = True
                                 else:
                                     if selectedShape != None:
-                                            selectedShape.color = colors["lblue"]
+                                        selectedShape.color = colors["lblue"]
+                                        massInput = ""
+                                        sizeInput = ["", "", ""]
                                     selectedShape = None
 
         elif (pygame.mouse.get_pos()[0] >= mainPrism.corners[0][0] and pygame.mouse.get_pos()[0] <= mainPrism.corners[1][0] and
@@ -734,13 +828,16 @@ while running:
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 found = False
+                
                 for shapeL in shapeList:
                     for shape in shapeL[::-1]:
                         if not found:
                             if (pygame.mouse.get_pos()[0] >= shape.corners[0][0] and pygame.mouse.get_pos()[0] <= shape.corners[1][0] and
                                 pygame.mouse.get_pos()[1] >= shape.corners[1][1] and pygame.mouse.get_pos()[1] <= shape.corners[0][1]):
                                 if selectedShape != None:
-                                        selectedShape.color = colors["lblue"]
+                                    selectedShape.color = colors["lblue"]
+                                    massInput = ""
+                                    sizeInput = ["", "", ""]
 
                                 if shape == selectedShape:
                                     selectedShape = None
@@ -749,6 +846,8 @@ while running:
                                     selectedShape.color = colors["hblue"]
 
                                 found = True    
+                
+                
 
 
     window.fill(colors["white"])
@@ -797,16 +896,16 @@ while running:
         for shape in shapeL:
             shape.draw()
 
-    #! Selected shape arrows
+    #! Selected shape arrows and inputs
     if selectedShape != None:
         c = selectedShape.arrowC
-        cX = moveX(c, -180)
+        cX = moveX(c, -100)
         cY = (c[0]+100, c[1])
         cZ = (c[0], c[1]-100)
 
         pygame.draw.line(window, colors["blue"], moveX(c, -8), cX, 4)
         pygame.draw.circle(window, colors["blue"], moveX(moveX(c, -8)[::-1],2)[::-1], 2)
-        pygame.draw.polygon(window, colors["blue"], (moveX(cX,-24), moveX((cX[0]+(180**0.5)*math.cos(epsilon), cX[1]+(180**0.5)*math.sin(epsilon-0.1)),-24),moveX((cX[0]+(180**0.5)*math.sin(tau), cX[1]-(180**0.5)*math.cos(tau)),-24)))
+        pygame.draw.polygon(window, colors["blue"], (moveX(cX,-12), moveX((cX[0]+(180**0.5)*math.cos(epsilon), cX[1]+(180**0.5)*math.sin(epsilon-0.1)),-12),moveX((cX[0]+(180**0.5)*math.sin(tau), cX[1]-(180**0.5)*math.cos(tau)),-12)))
 
         pygame.draw.line(window, colors["red"], (c[0], c[1]-8), cZ, 4)
         pygame.draw.circle(window, colors["red"], (c[0]+1, c[1]-8), 2)
@@ -815,6 +914,28 @@ while running:
         pygame.draw.line(window, colors["green"], (c[0]+8, c[1]), cY, 4)
         pygame.draw.circle(window, colors["green"], (c[0]+8, c[1]+1), 2)
         pygame.draw.polygon(window, colors["green"], ((cY[0]+12, cY[1]), (cY[0], cY[1]-6), (cY[0], cY[1]+6)))
+
+        massT = inputFont.render("Mass:", 1, colors["gray"])
+        massText = (str(selectedShape.masse), colors["gray"]) if massInput == "" else (massInput, colors["black"])
+        massI = inputFont.render(massText[0], 1, massText[1])
+        massDiv = pygame.rect.Rect(windowWidth/6+40+massT.get_width(), 20, massI.get_width(), massI.get_height())
+        window.blit(massT, (windowWidth/6+30, 20))
+        window.blit(massI, (windowWidth/6+40+massT.get_width(),20))
+
+        sizeT = [inputFont.render(name+":", 1, colors["gray"]) for name in [selectedShape.nX,selectedShape.nY,selectedShape.nZ]]
+        sizeData = (selectedShape.sX,selectedShape.sY,selectedShape.sZ)
+        sizeDivs = []
+        for (i,size) in enumerate(sizeInput):
+            sizeText = (str(sizeData[i]), colors["gray"]) if size == "" else (size, colors["black"])
+            sizeI = inputFont.render(sizeText[0], 1, sizeText[1])
+            sizeDiv = pygame.rect.Rect(windowWidth/6+40+sizeT[i].get_width(),20+40*(i+1), sizeI.get_width(), sizeI.get_height())
+            window.blit(sizeT[i], (windowWidth/6+30, 20+40*(i+1)))
+            window.blit(sizeI, (windowWidth/6+40+sizeT[i].get_width(),20+40*(i+1)))
+
+            sizeDivs.append(sizeDiv)
+
+
+
 
 
     vectors = VectorCreation(*pointsList).retour_listes_position_vecter()
