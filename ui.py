@@ -20,6 +20,7 @@ phi = math.atan(1/2)
 epsilon = theta - phi
 tau = math.pi/2 -theta - phi
 PI = math.pi
+P = 1.1
 
 def to2d(x,y,z, main):
     center = centerPos if not main else (0,0)
@@ -64,11 +65,11 @@ class Prism:
         self.create()
 
     def create(self):
-        p0 = to2d(self.x, self.y, self.z, self.main)
-        p1 = (p0[0], p0[1]-self.sizeZ)
+        p4 = to2d(self.x, self.y, self.z, self.main)
+        p1 = moveX(p4,-self.sizeX)
+        p0 = (p1[0], p1[1]+self.sizeZ)
         p2 = (p1[0]+self.sizeY, p1[1])
         p3 = (p0[0]+self.sizeY, p0[1])
-        p4 = moveX(p1,self.sizeX)
         p5 = moveX(p2,self.sizeX)
         p6 = moveX(p3,self.sizeX)
         self.points = [p0,p1,p2,p3,p4,p5,p6]
@@ -237,18 +238,15 @@ class Cylinder:
 
     def create(self):
         self.center = to2d(self.x, self.y, self.z, self.main)
-        self.corners = ((self.center[0]-self.r1, self.center[1]+self.r1/2),(self.center[0]+self.r1, self.center[1]-self.height-self.r1/2))
+        self.corners = ((self.center[0]-max(self.r1,self.r2)*P, self.center[1]+self.height*P+max(self.r1,self.r2)*P/2),(self.center[0]+max(self.r1,self.r2)*P, self.center[1]-max(self.r1,self.r2)*P/2))
         self.arrowC = (self.corners[1][0]/2+self.corners[0][0]/2,self.corners[0][1]/2+self.corners[1][1]/2)
 
-        self.face1 = ((self.center[0]-self.r1,self.center[1]),
-                      (self.center[0]-self.r2,self.center[1]-self.height),
-                      (self.center[0]+self.r2,self.center[1]-self.height),
-                      (self.center[0]+self.r1,self.center[1]))
-        self.bottom = (self.center[0]-self.r1, self.center[1]-self.r1/2, self.r1*2, self.r1)
-        self.top = (self.center[0]-self.r2, 
-                    self.center[1]-self.height-self.r2/2, 
-                    self.r2*2, 
-                    self.r2)
+        self.face1 = ((self.center[0]-self.r1*P,self.center[1]),
+                      (self.center[0]-self.r2*P,self.center[1]+self.height*P),
+                      (self.center[0]+self.r2*P,self.center[1]+self.height*P),
+                      (self.center[0]+self.r1*P,self.center[1]))
+        self.top = (self.center[0]-self.r1*P, self.center[1]-self.r1*P/2, self.r1*2*P, self.r1*P)
+        self.bottom = (self.center[0]-self.r2*P, self.center[1]+self.height*P-self.r2*P/2, self.r2*2*P, self.r2*P)
 
     def draw(self):
         self.create()
@@ -261,8 +259,8 @@ class Cylinder:
         pygame.draw.ellipse(window, self.color, self.top)
         pygame.draw.ellipse(window, colors["black"], self.top,1)
 
-        pygame.draw.line(window, colors["black"],(self.center[0]-self.r1,self.center[1]),(self.center[0]-self.r2,self.center[1]-self.height))
-        pygame.draw.line(window, colors["black"],(self.center[0]+self.r1,self.center[1]),(self.center[0]+self.r2,self.center[1]-self.height))
+        pygame.draw.line(window, colors["black"],(self.center[0]-self.r1*P,self.center[1]),(self.center[0]-self.r2*P,self.center[1]+self.height*P))
+        pygame.draw.line(window, colors["black"],(self.center[0]+self.r1*P,self.center[1]),(self.center[0]+self.r2*P,self.center[1]+self.height*P))
 
     def volume_tot(self):
         return round((PI/3) * (self.height) * ((self.r1 ** 2) + (self.r2 ** 2) + (self.r1 * self.r2)))
@@ -422,19 +420,10 @@ class Ellipsoid:
 
     def create(self):
         self.center = to2d(self.x, self.y, self.z, self.main)
-        self.corners = ((self.center[0]-self.rY, self.center[1]+self.rZ),(self.center[0]+self.rY, self.center[1]-self.rZ))
+        self.corners = ((self.center[0]-self.rY*P, self.center[1]+self.rZ*P),(self.center[0]+self.rY*P, self.center[1]-self.rZ*P))
         self.arrowC = (self.corners[1][0]/2+self.corners[0][0]/2,self.corners[0][1]/2+self.corners[1][1]/2)
 
-        self.face = (self.center[0]-self.rY, self.center[1]-self.rZ, self.rY*2, self.rZ*2)
-
-        #self.arcs = []
-        #arcNb = self.rY // 10 - 1
-        #for i in range(arcNb):
-        #    radius = 2*self.rX*math.sin(i/(arcNb/3) + 0.5) + 50
-        #    print(radius)
-        #    arc = (self.center[0]+22*i-self.rY+5, self.center[1]-radius/2, radius, radius)
-        #
-        #    self.arcs.append(arc)
+        self.face = (self.center[0]-self.rY*P, self.center[1]-self.rZ*P, self.rY*2*P, self.rZ*2*P)
 
 
     def draw(self):
@@ -617,8 +606,8 @@ class VectorCreation:
 #! Object selection section
 section_bg = pygame.rect.Rect(0,0, windowWidth/6, windowHeight)
 
-mainPrism = Prism((0,windowWidth/12-55,windowHeight*1/6+80), (80,80,80), True, 100)
-mainCylinder = Cylinder((0,windowWidth/12,windowHeight/2+40), 50,50,80, True, 100)
+mainPrism = Prism((0,windowWidth/12-20,windowHeight*1/6-25), (80,80,80), True, 100)
+mainCylinder = Cylinder((0,windowWidth/12,windowHeight/2-40), 50,50,80, True, 100)
 mainEllipsoid = Ellipsoid((0,windowWidth/12,windowHeight*5/6-20), 40,80,50, True, 100)
 
 xGrab, yGrab, zGrab = False, False, False
@@ -715,7 +704,7 @@ while running:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                shapeList.append(Cylinder((0,0,0), 40, 40, 80, False, 100))
+                shapeList.append(Cylinder((0,0,0), 10, 40, 80, False, 100))
 
         elif (pygame.mouse.get_pos()[0] >= mainEllipsoid.corners[0][0] and pygame.mouse.get_pos()[0] <= mainEllipsoid.corners[1][0] and
             pygame.mouse.get_pos()[1] >= mainEllipsoid.corners[1][1] and pygame.mouse.get_pos()[1] <= mainEllipsoid.corners[0][1]):
