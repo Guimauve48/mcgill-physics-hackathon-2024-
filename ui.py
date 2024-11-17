@@ -879,8 +879,8 @@ while running:
     pygame.draw.aaline(window, colors["gray"], (centerPos[0], centerPos[1]-windowHeight*3/7),(centerPos[0]-10, centerPos[1]-windowHeight*3/7+15),2)
     pygame.draw.aaline(window, colors["gray"], (centerPos[0], centerPos[1]-windowHeight*3/7),(centerPos[0]+10, centerPos[1]-windowHeight*3/7+15),2)
     
-    pygame.draw.line(window, colors["gray"], moveX(centerPos,windowWidth*4/7),moveX(centerPos,-windowWidth*4/7))
-    pt = moveX(centerPos,-windowWidth*4/7)
+    pygame.draw.line(window, colors["gray"], moveX(centerPos,windowWidth*2/7),moveX(centerPos,-windowWidth*2/7))
+    pt = moveX(centerPos,-windowWidth*2/7)
     pygame.draw.line(window, colors["gray"], pt, (pt[0]+(325**0.5)*math.cos(alpha), pt[1]+(325**0.5)*math.sin(alpha)))
     pygame.draw.line(window, colors["gray"], pt, (pt[0]+(325**0.5)*math.sin(gamma), pt[1]-(325**0.5)*math.cos(gamma)))
 
