@@ -942,7 +942,7 @@ while running:
     for sh in vectors:
         for (pos, vec) in sh:
             p0 = to2d(pos[0],pos[1],pos[2], False)
-            p1 = to2d(pos[0]+vec[0]*100,pos[1]+vec[1]*100,pos[2]+vec[2]*100, False)
+            p1 = to2d(pos[0]+vec[0]*200,pos[1]+vec[1]*200,pos[2]+vec[2]*200, False)
 
             pygame.draw.line(window, colors["red"], p0, p1)
 
