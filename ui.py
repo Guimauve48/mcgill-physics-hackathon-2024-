@@ -612,8 +612,9 @@ mainEllipsoid = Ellipsoid((0,windowWidth/12,windowHeight*5/6-20), 40,80,50, True
 
 xGrab, yGrab, zGrab = False, False, False
 
-shapeList = []
-pointsList = []
+shapeList = [[],[]]
+pointsList = [[],[]]
+selectedBloc = 0
 selectedShape = None
 
 running = True  
@@ -625,14 +626,23 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running = False
+            elif event.key == pygame.K_1:
+                selectedBloc = 0
+            elif event.key == pygame.K_2:
+                selectedBloc = 1
         
         if event.type == pygame.MOUSEBUTTONUP:
             xGrab, yGrab, zGrab = False, False, False
 
-            pointsList = [shape.create_liste_cubeinfini_object() for shape in shapeList]
-            if len(pointsList) == 2:
-                vectors = VectorCreation(*pointsList)
+            pointsList[0] = []
+            for shape in shapeList[0]:
+                pointsList[0] += shape.create_liste_cubeinfini_object()
+            
+            pointsList[1] = []
+            for shape in shapeList[1]:
+                pointsList[1] += shape.create_liste_cubeinfini_object()
 
+            vectors = VectorCreation(*pointsList)
 
 
         if selectedShape != None:
@@ -670,25 +680,26 @@ while running:
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     found = False
-                    for shape in shapeList[::-1]:
-                        if not found:
-                            if (pygame.mouse.get_pos()[0] >= shape.corners[0][0] and pygame.mouse.get_pos()[0] <= shape.corners[1][0] and
-                                pygame.mouse.get_pos()[1] >= shape.corners[1][1] and pygame.mouse.get_pos()[1] <= shape.corners[0][1]):
-                                
-                                if selectedShape != None:
-                                        selectedShape.color = colors["lblue"]
+                    for shapeL in shapeList:
+                        for shape in shapeL[::-1]:
+                            if not found:
+                                if (pygame.mouse.get_pos()[0] >= shape.corners[0][0] and pygame.mouse.get_pos()[0] <= shape.corners[1][0] and
+                                    pygame.mouse.get_pos()[1] >= shape.corners[1][1] and pygame.mouse.get_pos()[1] <= shape.corners[0][1]):
+                                    
+                                    if selectedShape != None:
+                                            selectedShape.color = colors["lblue"]
 
-                                if shape == selectedShape:
-                                    selectedShape = None
+                                    if shape == selectedShape:
+                                        selectedShape = None
+                                    else:
+                                        selectedShape = shape
+                                        selectedShape.color = colors["hblue"]
+
+                                    found = True
                                 else:
-                                    selectedShape = shape
-                                    selectedShape.color = colors["hblue"]
-
-                                found = True
-                            else:
-                                if selectedShape != None:
-                                        selectedShape.color = colors["lblue"]
-                                selectedShape = None
+                                    if selectedShape != None:
+                                            selectedShape.color = colors["lblue"]
+                                    selectedShape = None
 
         elif (pygame.mouse.get_pos()[0] >= mainPrism.corners[0][0] and pygame.mouse.get_pos()[0] <= mainPrism.corners[1][0] and
             pygame.mouse.get_pos()[1] >= mainPrism.corners[1][1] and pygame.mouse.get_pos()[1] <= mainPrism.corners[0][1]):
@@ -696,7 +707,7 @@ while running:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                shapeList.append(Prism((0,0,0), (100,100,100), False, 100))
+                shapeList[selectedBloc].append(Prism((0,0,0), (100,100,100), False, 100))
 
         elif (pygame.mouse.get_pos()[0] >= mainCylinder.corners[0][0] and pygame.mouse.get_pos()[0] <= mainCylinder.corners[1][0] and
             pygame.mouse.get_pos()[1] >= mainCylinder.corners[1][1] and pygame.mouse.get_pos()[1] <= mainCylinder.corners[0][1]):
@@ -704,7 +715,7 @@ while running:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                shapeList.append(Cylinder((0,0,0), 10, 40, 80, False, 100))
+                shapeList[selectedBloc].append(Cylinder((0,0,0), 10, 40, 80, False, 100))
 
         elif (pygame.mouse.get_pos()[0] >= mainEllipsoid.corners[0][0] and pygame.mouse.get_pos()[0] <= mainEllipsoid.corners[1][0] and
             pygame.mouse.get_pos()[1] >= mainEllipsoid.corners[1][1] and pygame.mouse.get_pos()[1] <= mainEllipsoid.corners[0][1]):
@@ -712,7 +723,7 @@ while running:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                shapeList.append(Ellipsoid((0,0,0), 40, 80, 50, False, 100))
+                shapeList[selectedBloc].append(Ellipsoid((0,0,0), 40, 80, 50, False, 100))
         
         else:
             mainPrism.color = colors["lblue"]
@@ -723,20 +734,21 @@ while running:
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 found = False
-                for shape in shapeList[::-1]:
-                    if not found:
-                        if (pygame.mouse.get_pos()[0] >= shape.corners[0][0] and pygame.mouse.get_pos()[0] <= shape.corners[1][0] and
-                            pygame.mouse.get_pos()[1] >= shape.corners[1][1] and pygame.mouse.get_pos()[1] <= shape.corners[0][1]):
-                            if selectedShape != None:
-                                    selectedShape.color = colors["lblue"]
+                for shapeL in shapeList:
+                    for shape in shapeL[::-1]:
+                        if not found:
+                            if (pygame.mouse.get_pos()[0] >= shape.corners[0][0] and pygame.mouse.get_pos()[0] <= shape.corners[1][0] and
+                                pygame.mouse.get_pos()[1] >= shape.corners[1][1] and pygame.mouse.get_pos()[1] <= shape.corners[0][1]):
+                                if selectedShape != None:
+                                        selectedShape.color = colors["lblue"]
 
-                            if shape == selectedShape:
-                                selectedShape = None
-                            else:
-                                selectedShape = shape
-                                selectedShape.color = colors["hblue"]
+                                if shape == selectedShape:
+                                    selectedShape = None
+                                else:
+                                    selectedShape = shape
+                                    selectedShape.color = colors["hblue"]
 
-                            found = True    
+                                found = True    
 
 
     window.fill(colors["white"])
@@ -781,8 +793,9 @@ while running:
     mainEllipsoid.draw()
 
     #! Added shapes
-    for shape in shapeList:
-        shape.draw()
+    for shapeL in shapeList:
+        for shape in shapeL:
+            shape.draw()
 
     #! Selected shape arrows
     if selectedShape != None:
@@ -804,14 +817,13 @@ while running:
         pygame.draw.polygon(window, colors["green"], ((cY[0]+12, cY[1]), (cY[0], cY[1]-6), (cY[0], cY[1]+6)))
 
 
-    if len(pointsList) == 2:
-        vectors = VectorCreation(*pointsList).retour_listes_position_vecter()
-        for sh in vectors:
-            for (pos, vec) in sh:
-                p0 = to2d(pos[0],pos[1],pos[2], False)
-                p1 = to2d(pos[0]+vec[0]*100,pos[1]+vec[1]*100,pos[2]+vec[2]*100, False)
+    vectors = VectorCreation(*pointsList).retour_listes_position_vecter()
+    for sh in vectors:
+        for (pos, vec) in sh:
+            p0 = to2d(pos[0],pos[1],pos[2], False)
+            p1 = to2d(pos[0]+vec[0]*100,pos[1]+vec[1]*100,pos[2]+vec[2]*100, False)
 
-                pygame.draw.line(window, colors["red"], p0, p1)
+            pygame.draw.line(window, colors["red"], p0, p1)
 
     pygame.display.update() 
 
